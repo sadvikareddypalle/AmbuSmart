@@ -66,25 +66,48 @@
       margin-top: 10px;
     }
     .passport-frame {
-  width: 100px;
-  height: 125px;
-  border: 1px solid #ccc;
-  margin: 10px auto;
-  padding: 4px;
-  background-color: #f9f9f9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.passport-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
+      width: 100px;
+      height: 125px;
+      border: 1px solid #ccc;
+      margin: 10px auto;
+      padding: 4px;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .passport-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+    }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+  <script>
+    // TODO: Replace with your Firebase project configuration
+    const firebaseConfig = {
+  apiKey: "AIzaSyApwNE4GKrGYRosVjGKLFgrp4k6Z6VUKmk",
+  authDomain: "ambu-smart.firebaseapp.com",
+  projectId: "ambu-smart",
+  storageBucket: "ambu-smart.appspot.com", // ✅ FIXED
+  messagingSenderId: "365591173387",
+  appId: "1:365591173387:web:53f3601b0815d1a417aa0e",
+  measurementId: "G-W44SF8Z3CZ"
+};
+
+
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+  </script>
 </head>
 <body>
 
@@ -122,34 +145,71 @@
     <input type="file" id="driverImg" accept="image/*" onchange="previewImage(event)" required>
 
     <div class="preview">
-        <div class="passport-frame" id="imageContainer" style="display: none;">
-          <img id="imgPreview" src="" alt="Passport Photo Preview">
-        </div>
+      <div class="passport-frame" id="imageContainer" style="display: none;">
+        <img id="imgPreview" src="" alt="Passport Photo Preview">
       </div>
-           
+    </div>
+    
     <button type="submit">Submit</button>
   </form>
 </div>
 
 <script>
-function previewImage(event) {
-  const imgPreview = document.getElementById('imgPreview');
-  const imageContainer = document.getElementById('imageContainer');
+  function previewImage(event) {
+    const imgPreview = document.getElementById('imgPreview');
+    const imageContainer = document.getElementById('imageContainer');
 
-  imgPreview.src = URL.createObjectURL(event.target.files[0]);
-  imageContainer.style.display = 'flex'; // Show the frame
-}
+    imgPreview.src = URL.createObjectURL(event.target.files[0]);
+    imageContainer.style.display = 'flex';
+  }
 
-  document.getElementById('driverForm').addEventListener('submit', function (e) {
+  document.getElementById('driverForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    // Just confirming the form is submitted
-    alert("Driver details submitted successfully!");
+    const name = document.getElementById('driverName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const license = document.getElementById('license').value.trim();
+    const vehicle = document.getElementById('vehicle').value.trim();
+    const experience = parseInt(document.getElementById('experience').value.trim());
+    const emergencyContactName = document.getElementById('emergencyContactName').value.trim();
+    const emergencyContactPhone = document.getElementById('emergencyContactPhone').value.trim();
+    const imageFile = document.getElementById('driverImg').files[0];
 
-    // You could also collect and save these values into localStorage or send to backend
-    // Example:
-    // const formData = new FormData(document.getElementById('driverForm'));
-    // send formData to server or localStorage
+    if (!imageFile) {
+      alert("Please upload an image.");
+      return;
+    }
+
+    try {
+      // Upload image to Firebase Storage
+      const imageRef = storage.ref().child(`driver_images/${name}_${Date.now()}`);
+      const snapshot = await imageRef.put(imageFile);
+      const imageUrl = await snapshot.ref.getDownloadURL();
+
+      // Save all data to Firestore
+      await db.collection("driver_details").doc(name).set({
+        name,
+        email,
+        phone,
+        address,
+        license,
+        vehicle,
+        experience,
+        emergencyContactName,
+        emergencyContactPhone,
+        imageUrl,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      alert("Driver details submitted successfully!");
+      document.getElementById("driverForm").reset();
+      document.getElementById("imageContainer").style.display = 'none';
+    } catch (error) {
+      console.error("Error submitting driver data:", error);
+      alert("Error submitting form. Please check the console for details.");
+    }
   });
 </script>
 
