@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AmbuSmart - Request Ambulance</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('https://img.freepik.com/free-vector/abstract-medical-wallpaper-template-design_53876-61805.jpg') no-repeat center center / cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      transition: background-color 0.3s ease;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .left-section {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      z-index: 1;
+      animation: fadeSlideIn 1.2s ease forwards;
+    }
+
+    .left-section h1 {
+      font-size: 6rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #d80909;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    @keyframes fadeSlideIn {
+      0% {
+        opacity: 0;
+        transform: translate(-100%, -50%);
+      }
+      100% {
+        opacity: 1;
+        transform: translate(0%, -50%);
+      }
+    }
+
+    .right-section {
+      flex: 1;
+      max-width: 450px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #fff;
+    }
+
+    input[type="text"], input[type="tel"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    input::placeholder {
+      color: #ccc;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      background: #ff416c;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #30ac2b;
+    }
+
+    #toggleDarkMode {
+      position: fixed;
+      top: 5px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 999;
+      width: auto;
+    }
+
+    #note {
+      font-size: 12px;
+      color: #ddd;
+      margin-top: 5px;
+    }
+
+    /* Light Mode */
+body:not(.dark-mode) .right-section label {
+  color: #000; /* Black for light mode */
+}
+
+body:not(.dark-mode) .right-section input {
+  color: #000; /* Black text for input fields in light mode */
+}
+
+body:not(.dark-mode) .right-section input::placeholder {
+  color: #777; /* Placeholder text in light mode */
+}
+
+
+    /* Dark Mode */
+    body.dark-mode {
+      background: #0e0e0e;
+    }
+
+    body.dark-mode .right-section {
+      background: rgba(30, 30, 30, 0.8);
+      color: #fff;
+    }
+
+    body.dark-mode input {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    body.dark-mode input::placeholder {
+      color: #aaa;
+    }
+
+    body.dark-mode button {
+      background: #e63946;
+    }
+
+    body.dark-mode button:hover {
+      background: #c92a37;
+    }
+
+    body.dark-mode .left-section h1 {
+      color: #fff;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        padding: 20px;
+        justify-content: center;
+      }
+
+      .left-section {
+        margin-bottom: 20px;
+      }
+
+      .right-section {
+        width: 100%;
+      }
+
+      .left-section h1 {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button id="toggleDarkMode">🌙</button>
+
+  <div class="container">
+    <div class="left-section">
+      <h1>AmbuSmart</h1>
+    </div>
+
+    <div class="right-section">
+      <form id="ambulanceForm">
+        <label for="name">Patient Name</label>
+        <input type="text" id="name" placeholder="Enter patient's name" />
+
+        <label for="problem">Problem</label>
+        <input type="text" id="problem" placeholder="Enter problem" />
+
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" placeholder="Enter phone number" />
+
+        <label for="address">Address</label>
+        <input type="text" id="address" placeholder="Enter address" />
+
+        <label for="locationInput">Search Location</label>
+        <input type="text" id="locationInput" placeholder="e.g., Inorbit mall" />
+        <button type="button" id="generateMapLink">Generate Google Maps Link</button>
+        <div id="note">Click above to generate map link. It replaces text with a link.</div>
+
+        <button type="submit">SEND REQUEST</button>
+      </form>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+      apiKey: "AIzaSyCRU1GyhcPzdAOmOhqDCvoVL9PnYIHTmXQ",
+      authDomain: "ambusmart-93046.firebaseapp.com",
+      projectId: "ambusmart-93046",
+      storageBucket: "ambusmart-93046.firebasestorage.app",
+      messagingSenderId: "352226643673",
+      appId: "1:352226643673:web:37f246bfc07060d59878c8",
+      measurementId: "G-FGJXYRT7W3"
+    };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const form = document.getElementById("ambulanceForm");
+  const submitBtn = form.querySelector("button[type='submit']");
+  const locationInput = document.getElementById("locationInput");
+
+  let userLocation = null;
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+    },
+    () => {
+      toastr.warning("Location access denied.");
+    }
+  );
+
+  document.getElementById("generateMapLink").addEventListener("click", () => {
+    const query = encodeURIComponent(locationInput.value.trim());
+    if (!query) {
+      toastr.warning("Please enter a location.");
+      return;
+    }
+    locationInput.value = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    toastr.success("Google Maps link generated!");
+  });
+
+  form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Sending...";
+
+  const name = document.getElementById("name").value.trim();
+  const problem = document.getElementById("problem").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const locationLink = locationInput.value.trim();
+
+  try {
+    const now = new Date();
+
+// Format parts with leading zeroes
+const pad = (n) => n.toString().padStart(2, '0');
+
+const year = now.getFullYear();
+const month = pad(now.getMonth() + 1);
+const date = pad(now.getDate());
+const hours = pad(now.getHours());
+const minutes = pad(now.getMinutes());
+const seconds = pad(now.getSeconds());
+
+// Final docId format: name_YYYY-MM-DD_HH:MM:SS
+const docId = `${name}_${year}-${month}-${date}_${hours}:${minutes}:${seconds}`;
+
+
+    await setDoc(doc(db, "patient_form", docId), {
+      name,
+      problem,
+      phone,
+      address,
+      locationLink,
+      userLocation,
+      timestamp: serverTimestamp()
+    });
+
+    toastr.success("Request sent successfully!");
+    form.reset();
+  } catch (err) {
+    console.error("Error saving to Firestore:", err);
+    toastr.error("Failed to send request.");
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "SEND REQUEST";
+  }
+});
+
+
+  const toggleBtn = document.getElementById("toggleDarkMode");
+  toggleBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    localStorage.setItem("darkMode", isDark);
+    toggleBtn.textContent = isDark ? "☀️" : "🌙";
+  });
+
+  // Persist dark mode
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedMode = localStorage.getItem("darkMode");
+    if (savedMode === "true") {
+      document.body.classList.add("dark-mode");
+      toggleBtn.textContent = "☀️";
+    }
+  });
+</script>
+</body>
+</html>
+  
