@@ -60,11 +60,6 @@
       margin-top: 10px;
       text-align: center;
     }
-    .preview img {
-      width: 100px;
-      border-radius: 100%;
-      margin-top: 10px;
-    }
     .passport-frame {
       width: 100px;
       height: 125px;
@@ -82,31 +77,47 @@
       object-fit: cover;
       border-radius: 4px;
     }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background-color: #333;
+      color: #fff;
+      border-radius: 6px;
+      display: none;
+      z-index: 9999;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #ddd;
+      margin-top: 10px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 10px;
+      background-color: #28a745;
+      width: 0%;
+    }
   </style>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 
   <script>
-    // TODO: Replace with your Firebase project configuration
     const firebaseConfig = {
-  apiKey: "AIzaSyApwNE4GKrGYRosVjGKLFgrp4k6Z6VUKmk",
-  authDomain: "ambu-smart.firebaseapp.com",
-  projectId: "ambu-smart",
-  storageBucket: "ambu-smart.appspot.com", // ✅ FIXED
-  messagingSenderId: "365591173387",
-  appId: "1:365591173387:web:53f3601b0815d1a417aa0e",
-  measurementId: "G-W44SF8Z3CZ"
+  apiKey: "AIzaSyCeupkI2MPwxZTy8MLZDKWEqT_k60S0apM",
+  authDomain: "ambusmart-7b53e.firebaseapp.com",
+  projectId: "ambusmart-7b53e",
+  storageBucket: "ambusmart-7b53e.firebasestorage.app",
+  messagingSenderId: "312650451682",
+  appId: "1:312650451682:web:169a478806c9d10e05acbb",
+  measurementId: "G-35DJB2JQTE"
 };
-
-
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const storage = firebase.storage();
   </script>
 </head>
 <body>
@@ -115,31 +126,31 @@
   <h2>Driver Registration</h2>
   <form id="driverForm">
     <label for="driverName">Driver Name</label>
-    <input type="text" id="driverName" placeholder="Enter full name" required>
+    <input type="text" id="driverName" required>
 
     <label for="email">Email Address</label>
-    <input type="email" id="email" placeholder="Enter email" required>
+    <input type="email" id="email" required>
 
     <label for="phone">Phone Number</label>
-    <input type="tel" id="phone" placeholder="Enter phone number" required>
+    <input type="tel" id="phone" required>
 
     <label for="address">Address</label>
-    <input type="text" id="address" placeholder="Enter address" required>
+    <input type="text" id="address" required>
 
     <label for="license">License Number</label>
-    <input type="text" id="license" placeholder="Enter license number" required>
+    <input type="text" id="license" required>
 
     <label for="vehicle">Vehicle Number</label>
-    <input type="text" id="vehicle" placeholder="Enter vehicle number" required>
+    <input type="text" id="vehicle" required>
 
     <label for="experience">Years of Experience</label>
-    <input type="number" id="experience" placeholder="Enter experience in years" required min="0">
+    <input type="number" id="experience" min="0" required>
 
     <label for="emergencyContactName">Emergency Contact Name</label>
-    <input type="text" id="emergencyContactName" placeholder="Enter emergency contact name" required>
+    <input type="text" id="emergencyContactName" required>
 
     <label for="emergencyContactPhone">Emergency Contact Phone</label>
-    <input type="tel" id="emergencyContactPhone" placeholder="Enter emergency phone number" required>
+    <input type="tel" id="emergencyContactPhone" required>
 
     <label for="driverImg">Upload Driver Image</label>
     <input type="file" id="driverImg" accept="image/*" onchange="previewImage(event)" required>
@@ -149,16 +160,34 @@
         <img id="imgPreview" src="" alt="Passport Photo Preview">
       </div>
     </div>
-    
+
+    <div class="progress-bar">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+
     <button type="submit">Submit</button>
   </form>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
+  const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dafoanpxr/image/upload';
+  const CLOUDINARY_UPLOAD_PRESET = 'Driver';
+
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 4000);
+  }
+
   function previewImage(event) {
     const imgPreview = document.getElementById('imgPreview');
     const imageContainer = document.getElementById('imageContainer');
-
     imgPreview.src = URL.createObjectURL(event.target.files[0]);
     imageContainer.style.display = 'flex';
   }
@@ -178,37 +207,58 @@
     const imageFile = document.getElementById('driverImg').files[0];
 
     if (!imageFile) {
-      alert("Please upload an image.");
+      showToast("Please upload an image", true);
       return;
     }
 
     try {
-      // Upload image to Firebase Storage
-      const imageRef = storage.ref().child(`driver_images/${name}_${Date.now()}`);
-      const snapshot = await imageRef.put(imageFile);
-      const imageUrl = await snapshot.ref.getDownloadURL();
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-      // Save all data to Firestore
-      await db.collection("driver_details").doc(name).set({
-        name,
-        email,
-        phone,
-        address,
-        license,
-        vehicle,
-        experience,
-        emergencyContactName,
-        emergencyContactPhone,
-        imageUrl,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = '0%';
 
-      alert("Driver details submitted successfully!");
-      document.getElementById("driverForm").reset();
-      document.getElementById("imageContainer").style.display = 'none';
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', CLOUDINARY_URL);
+      xhr.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+          const percent = (event.loaded / event.total) * 100;
+          progressBar.style.width = percent + '%';
+        }
+      };
+
+      xhr.onload = async function () {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          const imageUrl = response.secure_url;
+
+          // Save to Firestore
+          await db.collection("driver_details").doc(name).set({
+            name, email, phone, address, license,
+            vehicle, experience, emergencyContactName,
+            emergencyContactPhone, imageUrl,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          showToast("Driver details submitted successfully!");
+          document.getElementById("driverForm").reset();
+          document.getElementById("imageContainer").style.display = 'none';
+          progressBar.style.width = '0%';
+        } else {
+          showToast("Upload failed!", true);
+        }
+      };
+
+      xhr.onerror = function () {
+        showToast("Error uploading image!", true);
+      };
+
+      xhr.send(formData);
     } catch (error) {
-      console.error("Error submitting driver data:", error);
-      alert("Error submitting form. Please check the console for details.");
+      console.error("Error submitting form:", error);
+      showToast("Submission failed!", true);
     }
   });
 </script>
