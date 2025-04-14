@@ -8,6 +8,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <style>
+    /* Styles unchanged */
     body {
       margin: 0;
       padding: 0;
@@ -127,21 +128,18 @@
       margin-top: 5px;
     }
 
-    /* Light Mode */
-body:not(.dark-mode) .right-section label {
-  color: #000; /* Black for light mode */
-}
+    body:not(.dark-mode) .right-section label {
+      color: #000;
+    }
 
-body:not(.dark-mode) .right-section input {
-  color: #000; /* Black text for input fields in light mode */
-}
+    body:not(.dark-mode) .right-section input {
+      color: #000;
+    }
 
-body:not(.dark-mode) .right-section input::placeholder {
-  color: #777; /* Placeholder text in light mode */
-}
+    body:not(.dark-mode) .right-section input::placeholder {
+      color: #777;
+    }
 
-
-    /* Dark Mode */
     body.dark-mode {
       background: #0e0e0e;
     }
@@ -231,14 +229,15 @@ body:not(.dark-mode) .right-section input::placeholder {
   import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
-  apiKey: "AIzaSyCeupkI2MPwxZTy8MLZDKWEqT_k60S0apM",
-  authDomain: "ambusmart-7b53e.firebaseapp.com",
-  projectId: "ambusmart-7b53e",
-  storageBucket: "ambusmart-7b53e.firebasestorage.app",
-  messagingSenderId: "312650451682",
-  appId: "1:312650451682:web:169a478806c9d10e05acbb",
-  measurementId: "G-35DJB2JQTE"
-};
+    apiKey: "AIzaSyCeupkI2MPwxZTy8MLZDKWEqT_k60S0apM",
+    authDomain: "ambusmart-7b53e.firebaseapp.com",
+    projectId: "ambusmart-7b53e",
+    storageBucket: "ambusmart-7b53e.firebasestorage.app",
+    messagingSenderId: "312650451682",
+    appId: "1:312650451682:web:169a478806c9d10e05acbb",
+    measurementId: "G-35DJB2JQTE"
+  };
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
@@ -271,54 +270,54 @@ body:not(.dark-mode) .right-section input::placeholder {
   });
 
   form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Sending...";
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending...";
 
-  const name = document.getElementById("name").value.trim();
-  const problem = document.getElementById("problem").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const address = document.getElementById("address").value.trim();
-  const locationLink = locationInput.value.trim();
+    const name = document.getElementById("name").value.trim();
+    const problem = document.getElementById("problem").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const locationLink = locationInput.value.trim();
 
-  try {
-    const now = new Date();
+    if (!name || !problem || !phone || !address || !locationLink) {
+      toastr.error("Please fill in all fields before submitting.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "SEND REQUEST";
+      return;
+    }
 
-// Format parts with leading zeroes
-const pad = (n) => n.toString().padStart(2, '0');
+    try {
+      const now = new Date();
+      const pad = (n) => n.toString().padStart(2, '0');
+      const year = now.getFullYear();
+      const month = pad(now.getMonth() + 1);
+      const date = pad(now.getDate());
+      const hours = pad(now.getHours());
+      const minutes = pad(now.getMinutes());
+      const seconds = pad(now.getSeconds());
+      const docId = `${name}_${year}-${month}-${date}_${hours}:${minutes}:${seconds}`;
 
-const year = now.getFullYear();
-const month = pad(now.getMonth() + 1);
-const date = pad(now.getDate());
-const hours = pad(now.getHours());
-const minutes = pad(now.getMinutes());
-const seconds = pad(now.getSeconds());
+      await setDoc(doc(db, "patient_form", docId), {
+        name,
+        problem,
+        phone,
+        address,
+        locationLink,
+        userLocation,
+        timestamp: serverTimestamp()
+      });
 
-// Final docId format: name_YYYY-MM-DD_HH:MM:SS
-const docId = `${name}_${year}-${month}-${date}_${hours}:${minutes}:${seconds}`;
-
-
-    await setDoc(doc(db, "patient_form", docId), {
-      name,
-      problem,
-      phone,
-      address,
-      locationLink,
-      userLocation,
-      timestamp: serverTimestamp()
-    });
-
-    toastr.success("Request sent successfully!");
-    form.reset();
-  } catch (err) {
-    console.error("Error saving to Firestore:", err);
-    toastr.error("Failed to send request.");
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "SEND REQUEST";
-  }
-});
-
+      toastr.success("Request sent successfully!");
+      form.reset();
+    } catch (err) {
+      console.error("Error saving to Firestore:", err);
+      toastr.error("Failed to send request.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "SEND REQUEST";
+    }
+  });
 
   const toggleBtn = document.getElementById("toggleDarkMode");
   toggleBtn.addEventListener("click", () => {
@@ -328,7 +327,6 @@ const docId = `${name}_${year}-${month}-${date}_${hours}:${minutes}:${seconds}`;
     toggleBtn.textContent = isDark ? "☀️" : "🌙";
   });
 
-  // Persist dark mode
   window.addEventListener("DOMContentLoaded", () => {
     const savedMode = localStorage.getItem("darkMode");
     if (savedMode === "true") {
@@ -339,4 +337,3 @@ const docId = `${name}_${year}-${month}-${date}_${hours}:${minutes}:${seconds}`;
 </script>
 </body>
 </html>
-  
