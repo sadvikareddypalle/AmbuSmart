@@ -108,14 +108,14 @@
 
   <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyCeupkI2MPwxZTy8MLZDKWEqT_k60S0apM",
-  authDomain: "ambusmart-7b53e.firebaseapp.com",
-  projectId: "ambusmart-7b53e",
-  storageBucket: "ambusmart-7b53e.firebasestorage.app",
-  messagingSenderId: "312650451682",
-  appId: "1:312650451682:web:169a478806c9d10e05acbb",
-  measurementId: "G-35DJB2JQTE"
-};
+      apiKey: "AIzaSyCeupkI2MPwxZTy8MLZDKWEqT_k60S0apM",
+      authDomain: "ambusmart-7b53e.firebaseapp.com",
+      projectId: "ambusmart-7b53e",
+      storageBucket: "ambusmart-7b53e.firebasestorage.app",
+      messagingSenderId: "312650451682",
+      appId: "1:312650451682:web:169a478806c9d10e05acbb",
+      measurementId: "G-35DJB2JQTE"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
   </script>
@@ -192,27 +192,52 @@
     imageContainer.style.display = 'flex';
   }
 
+  function validateInputs(data) {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!data.name || !data.email || !data.phone || !data.address || !data.license ||
+        !data.vehicle || isNaN(data.experience) || !data.emergencyContactName ||
+        !data.emergencyContactPhone) {
+      return "All fields must be filled.";
+    }
+    if (!emailRegex.test(data.email)) {
+      return "Invalid email format.";
+    }
+    if (!phoneRegex.test(data.phone) || !phoneRegex.test(data.emergencyContactPhone)) {
+      return "Invalid phone number(s). Must be 10 digits starting with 6-9.";
+    }
+    return null;
+  }
+
   document.getElementById('driverForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    const name = document.getElementById('driverName').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const address = document.getElementById('address').value.trim();
-    const license = document.getElementById('license').value.trim();
-    const vehicle = document.getElementById('vehicle').value.trim();
-    const experience = parseInt(document.getElementById('experience').value.trim());
-    const emergencyContactName = document.getElementById('emergencyContactName').value.trim();
-    const emergencyContactPhone = document.getElementById('emergencyContactPhone').value.trim();
-    const imageFile = document.getElementById('driverImg').files[0];
+    const data = {
+      name: document.getElementById('driverName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      license: document.getElementById('license').value.trim(),
+      vehicle: document.getElementById('vehicle').value.trim(),
+      experience: parseInt(document.getElementById('experience').value.trim()),
+      emergencyContactName: document.getElementById('emergencyContactName').value.trim(),
+      emergencyContactPhone: document.getElementById('emergencyContactPhone').value.trim()
+    };
 
+    const imageFile = document.getElementById('driverImg').files[0];
     if (!imageFile) {
-      showToast("Please upload an image", true);
+      showToast("Please upload an image.", true);
+      return;
+    }
+
+    const validationError = validateInputs(data);
+    if (validationError) {
+      showToast(validationError, true);
       return;
     }
 
     try {
-      // Upload to Cloudinary
       const formData = new FormData();
       formData.append('file', imageFile);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
@@ -234,11 +259,9 @@
           const response = JSON.parse(xhr.responseText);
           const imageUrl = response.secure_url;
 
-          // Save to Firestore
-          await db.collection("driver_details").doc(name).set({
-            name, email, phone, address, license,
-            vehicle, experience, emergencyContactName,
-            emergencyContactPhone, imageUrl,
+          await db.collection("driver_details").doc(data.name).set({
+            ...data,
+            imageUrl,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
           });
 
@@ -247,7 +270,7 @@
           document.getElementById("imageContainer").style.display = 'none';
           progressBar.style.width = '0%';
         } else {
-          showToast("Upload failed!", true);
+          showToast("Image upload failed!", true);
         }
       };
 
@@ -257,7 +280,7 @@
 
       xhr.send(formData);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Submission error:", error);
       showToast("Submission failed!", true);
     }
   });
