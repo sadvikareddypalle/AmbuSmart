@@ -1,343 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AmbuSmart - Request Ambulance</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Driver Info Form</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background: url('https://img.freepik.com/free-vector/abstract-medical-wallpaper-template-design_53876-61805.jpg') no-repeat center center / cover;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
-      transition: background-color 0.3s ease;
-    }
-
-    .container {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       display: flex;
+      justify-content: center;
+      align-items: center;
       height: 100vh;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      backdrop-filter: blur(10px);
     }
-
-    .left-section {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #ffffff;
-      z-index: 1;
-      animation: fadeSlideIn 1.2s ease forwards;
-    }
-
-    .left-section h1 {
-      font-size: 6rem;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: #d80909;
-      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    @keyframes fadeSlideIn {
-      0% {
-        opacity: 0;
-        transform: translate(-100%, -50%);
-      }
-      100% {
-        opacity: 1;
-        transform: translate(0%, -50%);
-      }
-    }
-
-    .right-section {
-      flex: 1;
-      max-width: 450px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      border-radius: 20px;
+    .form-container {
+      background: #fff;
       padding: 30px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      color: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
+      overflow-y: auto;
+      max-height: 95vh;
     }
-
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
     label {
       font-weight: bold;
       display: block;
       margin-top: 15px;
-      color: #fff;
     }
-
-    input[type="text"], input[type="tel"] {
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    input[type="number"],
+    input[type="file"] {
       width: 100%;
-      padding: 12px;
-      margin-top: 6px;
-      border: none;
-      border-radius: 10px;
-      background-color: rgba(255, 255, 255, 0.15);
-      color: #fff;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-
-    input::placeholder {
-      color: #ccc;
-    }
-
     button {
-      margin-top: 20px;
-      padding: 12px;
+      margin-top: 25px;
       width: 100%;
-      border: none;
-      border-radius: 12px;
-      background: #ff416c;
+      padding: 12px;
+      background-color: #007bff;
       color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background: #30ac2b;
-    }
-
-    #toggleDarkMode {
-      position: fixed;
-      top: 5px;
-      left: 15px;
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
       border: none;
-      padding: 8px 12px;
       border-radius: 8px;
       cursor: pointer;
-      z-index: 999;
-      width: auto;
+      font-size: 16px;
     }
-
-    #note {
-      font-size: 12px;
-      color: #ddd;
-      margin-top: 5px;
+    button:hover {
+      background-color: #0056b3;
     }
-
-    /* Light Mode */
-body:not(.dark-mode) .right-section label {
-  color: #000; /* Black for light mode */
-}
-
-body:not(.dark-mode) .right-section input {
-  color: #000; /* Black text for input fields in light mode */
-}
-
-body:not(.dark-mode) .right-section input::placeholder {
-  color: #777; /* Placeholder text in light mode */
-}
-
-
-    /* Dark Mode */
-    body.dark-mode {
-      background: #0e0e0e;
+    .preview {
+      margin-top: 10px;
+      text-align: center;
     }
-
-    body.dark-mode .right-section {
-      background: rgba(30, 30, 30, 0.8);
+    .passport-frame {
+      width: 100px;
+      height: 125px;
+      border: 1px solid #ccc;
+      margin: 10px auto;
+      padding: 4px;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .passport-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background-color: #333;
       color: #fff;
+      border-radius: 6px;
+      display: none;
+      z-index: 9999;
     }
-
-    body.dark-mode input {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #fff;
+    .progress-bar {
+      width: 100%;
+      background-color: #ddd;
+      margin-top: 10px;
+      border-radius: 6px;
+      overflow: hidden;
     }
-
-    body.dark-mode input::placeholder {
-      color: #aaa;
-    }
-
-    body.dark-mode button {
-      background: #e63946;
-    }
-
-    body.dark-mode button:hover {
-      background: #c92a37;
-    }
-
-    body.dark-mode .left-section h1 {
-      color: #fff;
-      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        padding: 20px;
-        justify-content: center;
-      }
-
-      .left-section {
-        margin-bottom: 20px;
-      }
-
-      .right-section {
-        width: 100%;
-      }
-
-      .left-section h1 {
-        font-size: 3rem;
-      }
+    .progress-bar-inner {
+      height: 10px;
+      background-color: #28a745;
+      width: 0%;
     }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyApwNE4GKrGYRosVjGKLFgrp4k6Z6VUKmk",
+  authDomain: "ambu-smart.firebaseapp.com",
+  projectId: "ambu-smart",
+  storageBucket: "ambu-smart.firebasestorage.app",
+  messagingSenderId: "365591173387",
+  appId: "1:365591173387:web:53f3601b0815d1a417aa0e",
+  measurementId: "G-W44SF8Z3CZ"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
-  <button id="toggleDarkMode">🌙</button>
 
-  <div class="container">
-    <div class="left-section">
-      <h1>AmbuSmart</h1>
+<div class="form-container">
+  <h2>Driver Registration</h2>
+  <form id="driverForm">
+    <label for="driverName">Driver Name</label>
+    <input type="text" id="driverName" required>
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" required>
+
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone" required>
+
+    <label for="address">Address</label>
+    <input type="text" id="address" required>
+
+    <label for="license">License Number</label>
+    <input type="text" id="license" required>
+
+    <label for="vehicle">Vehicle Number</label>
+    <input type="text" id="vehicle" required>
+
+    <label for="experience">Years of Experience</label>
+    <input type="number" id="experience" min="0" required>
+
+    <label for="emergencyContactName">Emergency Contact Name</label>
+    <input type="text" id="emergencyContactName" required>
+
+    <label for="emergencyContactPhone">Emergency Contact Phone</label>
+    <input type="tel" id="emergencyContactPhone" required>
+
+    <label for="driverImg">Upload Driver Image</label>
+    <input type="file" id="driverImg" accept="image/*" onchange="previewImage(event)" required>
+
+    <div class="preview">
+      <div class="passport-frame" id="imageContainer" style="display: none;">
+        <img id="imgPreview" src="" alt="Passport Photo Preview">
+      </div>
     </div>
 
-    <div class="right-section">
-      <form id="ambulanceForm">
-        <label for="name">Patient Name</label>
-        <input type="text" id="name" placeholder="Enter patient's name" />
-
-        <label for="problem">Problem</label>
-        <input type="text" id="problem" placeholder="Enter problem" />
-
-        <label for="phone">Phone Number</label>
-        <input type="tel" id="phone" placeholder="Enter phone number" />
-
-        <label for="address">Address</label>
-        <input type="text" id="address" placeholder="Enter address" />
-
-        <label for="locationInput">Search Location</label>
-        <input type="text" id="locationInput" placeholder="e.g., Inorbit mall" />
-        <button type="button" id="generateMapLink">Generate Google Maps Link</button>
-        <div id="note">Click above to generate map link. It replaces text with a link.</div>
-
-        <button type="submit">SEND REQUEST</button>
-      </form>
+    <div class="progress-bar">
+      <div class="progress-bar-inner" id="progressBar"></div>
     </div>
-  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    <button type="submit">Submit</button>
+  </form>
+</div>
 
-  const firebaseConfig = {
-      apiKey: "AIzaSyCRU1GyhcPzdAOmOhqDCvoVL9PnYIHTmXQ",
-      authDomain: "ambusmart-93046.firebaseapp.com",
-      projectId: "ambusmart-93046",
-      storageBucket: "ambusmart-93046.firebasestorage.app",
-      messagingSenderId: "352226643673",
-      appId: "1:352226643673:web:37f246bfc07060d59878c8",
-      measurementId: "G-FGJXYRT7W3"
+<div class="toast" id="toast"></div>
+
+<script>
+  const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dafoanpxr/image/upload';
+  const CLOUDINARY_UPLOAD_PRESET = 'Driver';
+
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 4000);
+  }
+
+  function previewImage(event) {
+    const imgPreview = document.getElementById('imgPreview');
+    const imageContainer = document.getElementById('imageContainer');
+    imgPreview.src = URL.createObjectURL(event.target.files[0]);
+    imageContainer.style.display = 'flex';
+  }
+
+  function validateInputs(data) {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!data.name || !data.email || !data.phone || !data.address || !data.license ||
+        !data.vehicle || isNaN(data.experience) || !data.emergencyContactName ||
+        !data.emergencyContactPhone) {
+      return "All fields must be filled.";
+    }
+    if (!emailRegex.test(data.email)) {
+      return "Invalid email format.";
+    }
+    if (!phoneRegex.test(data.phone) || !phoneRegex.test(data.emergencyContactPhone)) {
+      return "Invalid phone number(s). Must be 10 digits starting with 6-9.";
+    }
+    return null;
+  }
+
+  document.getElementById('driverForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const data = {
+      name: document.getElementById('driverName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      license: document.getElementById('license').value.trim(),
+      vehicle: document.getElementById('vehicle').value.trim(),
+      experience: parseInt(document.getElementById('experience').value.trim()),
+      emergencyContactName: document.getElementById('emergencyContactName').value.trim(),
+      emergencyContactPhone: document.getElementById('emergencyContactPhone').value.trim()
     };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  const form = document.getElementById("ambulanceForm");
-  const submitBtn = form.querySelector("button[type='submit']");
-  const locationInput = document.getElementById("locationInput");
-
-  let userLocation = null;
-
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      userLocation = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-    },
-    () => {
-      toastr.warning("Location access denied.");
-    }
-  );
-
-  document.getElementById("generateMapLink").addEventListener("click", () => {
-    const query = encodeURIComponent(locationInput.value.trim());
-    if (!query) {
-      toastr.warning("Please enter a location.");
+    const imageFile = document.getElementById('driverImg').files[0];
+    if (!imageFile) {
+      showToast("Please upload an image.", true);
       return;
     }
-    locationInput.value = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    toastr.success("Google Maps link generated!");
-  });
 
-  form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Sending...";
+    const validationError = validateInputs(data);
+    if (validationError) {
+      showToast(validationError, true);
+      return;
+    }
 
-  const name = document.getElementById("name").value.trim();
-  const problem = document.getElementById("problem").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const address = document.getElementById("address").value.trim();
-  const locationLink = locationInput.value.trim();
+    try {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-  try {
-    const now = new Date();
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = '0%';
 
-// Format parts with leading zeroes
-const pad = (n) => n.toString().padStart(2, '0');
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', CLOUDINARY_URL);
+      xhr.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+          const percent = (event.loaded / event.total) * 100;
+          progressBar.style.width = percent + '%';
+        }
+      };
 
-const year = now.getFullYear();
-const month = pad(now.getMonth() + 1);
-const date = pad(now.getDate());
-const hours = pad(now.getHours());
-const minutes = pad(now.getMinutes());
-const seconds = pad(now.getSeconds());
+      xhr.onload = async function () {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          const imageUrl = response.secure_url;
 
-// Final docId format: name_YYYY-MM-DD_HH:MM:SS
-const docId = `${name}_${year}-${month}-${date}_${hours}:${minutes}:${seconds}`;
+          await db.collection("driver_details").doc(data.name).set({
+            ...data,
+            imageUrl,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
 
+          showToast("Driver details submitted successfully!");
+          document.getElementById("driverForm").reset();
+          document.getElementById("imageContainer").style.display = 'none';
+          progressBar.style.width = '0%';
+        } else {
+          showToast("Image upload failed!", true);
+        }
+      };
 
-    await setDoc(doc(db, "patient_form", docId), {
-      name,
-      problem,
-      phone,
-      address,
-      locationLink,
-      userLocation,
-      timestamp: serverTimestamp()
-    });
+      xhr.onerror = function () {
+        showToast("Error uploading image!", true);
+      };
 
-    toastr.success("Request sent successfully!");
-    form.reset();
-  } catch (err) {
-    console.error("Error saving to Firestore:", err);
-    toastr.error("Failed to send request.");
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = "SEND REQUEST";
-  }
-});
-
-
-  const toggleBtn = document.getElementById("toggleDarkMode");
-  toggleBtn.addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-    const isDark = document.body.classList.contains("dark-mode");
-    localStorage.setItem("darkMode", isDark);
-    toggleBtn.textContent = isDark ? "☀️" : "🌙";
-  });
-
-  // Persist dark mode
-  window.addEventListener("DOMContentLoaded", () => {
-    const savedMode = localStorage.getItem("darkMode");
-    if (savedMode === "true") {
-      document.body.classList.add("dark-mode");
-      toggleBtn.textContent = "☀️";
+      xhr.send(formData);
+    } catch (error) {
+      console.error("Submission error:", error);
+      showToast("Submission failed!", true);
     }
   });
 </script>
+
 </body>
 </html>
-  
