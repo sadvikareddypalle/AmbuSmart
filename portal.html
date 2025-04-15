@@ -1,102 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Driver Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Driver Portal</title>
   <style>
-    * {
-      box-sizing: border-box;
+    body {
       margin: 0;
       padding: 0;
-    }
-
-    body {
-      height: 100vh;
-      background: linear-gradient(to right, #e0f7fa, #e1f5fe);
+      background: url('https://img.freepik.com/free-vector/abstract-medical-wallpaper-template-design_53876-61805.jpg') no-repeat center center / cover;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .header {
       display: flex;
-      justify-content: center;
       align-items: center;
-    }
-
-    .login-container {
-      background-color: #ffffff;
-      padding: 40px 30px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-      transition: transform 0.3s ease;
-    }
-
-    .login-container:hover {
-      transform: scale(1.02);
-    }
-
-    h2 {
-      margin-bottom: 24px;
-      color: #007BFF;
-      font-size: 28px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border-radius: 0 0 20px 20px;
       margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 16px;
-      transition: border-color 0.2s ease;
-    }
-
-    input[type="text"]:focus {
-      outline: none;
-      border-color: #007BFF;
-    }
-
-    button {
-      background-color: #007BFF;
       color: white;
-      padding: 12px 24px;
+    }
+
+    .profile-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 20px;
+      border: 3px solid #ff416c;
+    }
+
+    .info {
+      flex-grow: 1;
+    }
+
+    .info h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .info p {
+      margin: 5px 0;
+    }
+
+    .logout-btn {
+      background-color: #e63946;
+      color: white;
+      padding: 10px 16px;
       border: none;
-      border-radius: 10px;
-      font-size: 16px;
+      border-radius: 12px;
+      font-size: 14px;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
 
-    button:hover {
-      background-color: #0056b3;
+    .logout-btn:hover {
+      background-color: #c92a37;
     }
 
-    #message {
-      margin-top: 20px;
-      font-weight: 500;
+    .container-list {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .patient-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 500px;
+      color: white;
+      transition: transform 0.3s ease;
+    }
+
+    .patient-card:hover {
+      transform: scale(1.03);
+    }
+
+    .patient-card h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      color: #ff416c;
+    }
+
+    .patient-card p {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+
+    .timestamp {
       font-size: 14px;
-      color: red;
+      color: #ddd;
+    }
+
+    .accept-btn {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      padding: 8px 14px;
+      font-size: 14px;
+      background-color: #30ac2b;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .accept-btn:hover {
+      background-color: #248c21;
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <h2>Driver Login</h2>
-    <form id="loginForm">
-      <input type="text" id="phone" placeholder="Enter your phone number" required />
-      <button type="submit">Submit</button>
-    </form>
-    <p id="message"></p>
+  <div class="header">
+    <img id="driverImage" class="profile-img" src="" alt="Driver Photo">
+    <div class="info">
+      <h2 id="driverName">Name</h2>
+      <p id="driverPhone">Phone</p>
+      <p id="driverLicense">License</p>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
+
+  <div class="container-list" id="patientList"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import {
+      getFirestore, collection, getDocs, doc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCeupkI2MPwxZTy8MLZDKWEqT_k60S0apM",
       authDomain: "ambusmart-7b53e.firebaseapp.com",
       projectId: "ambusmart-7b53e",
-      storageBucket: "ambusmart-7b53e.firebaseapp.com",
+      storageBucket: "ambusmart-7b53e.appspot.com",
       messagingSenderId: "312650451682",
       appId: "1:312650451682:web:169a478806c9d10e05acbb",
       measurementId: "G-35DJB2JQTE"
@@ -105,34 +154,72 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const loginForm = document.getElementById('loginForm');
-    const messageEl = document.getElementById('message');
+    const driverData = JSON.parse(sessionStorage.getItem("driverData"));
+    if (!driverData) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("driverImage").src = driverData.imageUrl || "";
+      document.getElementById("driverName").textContent = driverData.name || "N/A";
+      document.getElementById("driverPhone").textContent = "Phone: " + (driverData.phone || "N/A");
+      document.getElementById("driverLicense").textContent = "License: " + (driverData.license || "N/A");
+    }
 
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const enteredPhone = document.getElementById('phone').value.trim();
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = "index.html";
+    }
 
+    const patientList = document.getElementById("patientList");
+
+    async function loadPatients() {
       try {
-        const snapshot = await getDocs(collection(db, 'driver_details'));
-        let found = false;
+        const snapshot = await getDocs(collection(db, "patient_form"));
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const docId = docSnap.id;
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.phone === enteredPhone) {
-            found = true;
-            sessionStorage.setItem("driverData", JSON.stringify(data));
-            window.location.href = "portal.html";
+          // Show if not accepted OR accepted by current driver
+          if (data.status === "Accepted" && data.acceptedBy !== driverData.phone) return;
+
+          const card = document.createElement("div");
+          card.className = "patient-card";
+
+          const time = data.timestamp?.toDate?.().toLocaleString?.() || "Unknown time";
+
+          card.innerHTML = `
+            <h3>${data.name || "Unknown Patient"}</h3>
+            <p><strong>Problem:</strong> ${data.problem || "N/A"}</p>
+            <p><strong>Address:</strong> ${data.address || "N/A"}</p>
+            <p class="timestamp"><strong>Time:</strong> ${time}</p>
+            ${data.status !== "Accepted" ? `<button class="accept-btn">Accept</button>` : ""}
+          `;
+
+          const acceptBtn = card.querySelector(".accept-btn");
+          if (acceptBtn) {
+            acceptBtn.onclick = async () => {
+              await updateDoc(doc(db, "patient_form", docId), {
+                status: "Accepted",
+                acceptedBy: driverData.phone
+              });
+
+              if (data.locationLink) {
+                window.open(data.locationLink, "_blank");
+              } else {
+                alert("No map link available.");
+              }
+
+              card.remove(); // hide card after accepting
+            };
           }
-        });
 
-        if (!found) {
-          messageEl.textContent = "❌ Phone number not found.";
-        }
+          patientList.appendChild(card);
+        });
       } catch (error) {
-        console.error("Login error:", error);
-        messageEl.textContent = "⚠️ Error logging in.";
+        console.error("Error loading patients:", error);
       }
-    });
+    }
+
+    loadPatients();
   </script>
 </body>
 </html>
