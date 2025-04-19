@@ -76,15 +76,44 @@
       font-size: 14px;
       color: red;
     }
+    label {
+  display: block;
+  text-align: left;
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+}
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+}
+
+input[type="password"]:focus {
+  outline: none;
+  border-color: #007BFF;
+}
+
   </style>
 </head>
 <body>
   <div class="login-container">
     <h2>Driver Login</h2>
     <form id="loginForm">
-      <input type="text" id="phone" placeholder="Enter your phone number" required />
-      <button type="submit">Submit</button>
-    </form>
+        <label for="phone">Enter Phone Number:</label>
+        <input type="text" id="phone" placeholder="Enter your phone number" required />
+      
+        <label for="password">Enter Password:</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+      
+        <button type="submit">Submit</button>
+    </form>   
     <p id="message"></p>
   </div>
 
