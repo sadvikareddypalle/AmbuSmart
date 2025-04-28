@@ -22,7 +22,7 @@
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       border-radius: 0 0 20px 20px;
       margin-bottom: 20px;
-      color: white;
+      color: rgb(29, 33, 41);
     }
 
     .profile-img {
@@ -31,7 +31,7 @@
       border-radius: 50%;
       object-fit: cover;
       margin-right: 20px;
-      border: 3px solid #ff416c;
+      border: 3px solid #a4d8f3;
     }
 
     .info {
@@ -62,11 +62,28 @@
       background-color: #c92a37;
     }
 
-    .container-list {
-      padding: 20px;
+    .container-split {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      width: 45%;
+      min-width: 300px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      color: rgb(16, 34, 190);
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
     .patient-card {
@@ -77,9 +94,7 @@
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      width: 90%;
-      max-width: 500px;
-      color: white;
+      color: rgb(23, 22, 22);
       transition: transform 0.3s ease;
     }
 
@@ -90,7 +105,7 @@
     .patient-card h3 {
       margin: 0 0 10px;
       font-size: 22px;
-      color: #ff416c;
+      color: #5b6bab;
     }
 
     .patient-card p {
@@ -100,7 +115,7 @@
 
     .timestamp {
       font-size: 14px;
-      color: #ddd;
+      color: #70879f;
     }
 
     .accept-btn {
@@ -133,7 +148,14 @@
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 
-  <div class="container-list" id="patientList"></div>
+  <div class="container-split">
+    <div class="section" id="pendingList">
+      <h2>Pending Requests</h2>
+    </div>
+    <div class="section" id="acceptedList">
+      <h2>Accepted Requests</h2>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
@@ -169,7 +191,8 @@
       window.location.href = "index.html";
     }
 
-    const patientList = document.getElementById("patientList");
+    const pendingList = document.getElementById("pendingList");
+    const acceptedList = document.getElementById("acceptedList");
 
     async function loadPatients() {
       try {
@@ -178,7 +201,6 @@
           const data = docSnap.data();
           const docId = docSnap.id;
 
-          // Show if not accepted OR accepted by current driver
           if (data.status === "Accepted" && data.acceptedBy !== driverData.phone) return;
 
           const card = document.createElement("div");
@@ -208,11 +230,17 @@
                 alert("No map link available.");
               }
 
-              card.remove(); // hide card after accepting
+              // Move the card to Accepted section
+              acceptedList.appendChild(card);
+              acceptBtn.remove(); // Remove the Accept button
             };
           }
 
-          patientList.appendChild(card);
+          if (data.status === "Accepted" && data.acceptedBy === driverData.phone) {
+            acceptedList.appendChild(card);
+          } else if (data.status !== "Accepted") {
+            pendingList.appendChild(card);
+          }
         });
       } catch (error) {
         console.error("Error loading patients:", error);
