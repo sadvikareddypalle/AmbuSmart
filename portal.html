@@ -195,59 +195,78 @@
     const acceptedList = document.getElementById("acceptedList");
 
     async function loadPatients() {
-      try {
-        const snapshot = await getDocs(collection(db, "patient_form"));
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          const docId = docSnap.id;
+  try {
+    const snapshot = await getDocs(collection(db, "patient_form"));
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const docId = docSnap.id;
 
-          if (data.status === "Accepted" && data.acceptedBy !== driverData.phone) return;
+      // Only show accepted cards if accepted by the current driver
+      if (data.status === "Accepted" && data.acceptedBy !== driverData.phone) return;
 
-          const card = document.createElement("div");
-          card.className = "patient-card";
+      const card = document.createElement("div");
+      card.className = "patient-card";
 
-          const time = data.timestamp?.toDate?.().toLocaleString?.() || "Unknown time";
+      const time = data.timestamp?.toDate?.().toLocaleString?.() || "Unknown time";
 
-          card.innerHTML = `
-            <h3>${data.name || "Unknown Patient"}</h3>
-            <p><strong>Problem:</strong> ${data.problem || "N/A"}</p>
-            <p><strong>Address:</strong> ${data.address || "N/A"}</p>
-            <p class="timestamp"><strong>Time:</strong> ${time}</p>
-            ${data.status !== "Accepted" ? `<button class="accept-btn">Accept</button>` : ""}
-          `;
+      card.innerHTML = `
+        <h3>${data.name || "Unknown Patient"}</h3>
+        <p><strong>Problem:</strong> ${data.problem || "N/A"}</p>
+        <p><strong>Address:</strong> ${data.address || "N/A"}</p>
+        <p class="timestamp"><strong>Time:</strong> ${time}</p>
+        ${data.status !== "Accepted" ? `<button class="accept-btn">Accept</button>` : ""}
+      `;
 
-          const acceptBtn = card.querySelector(".accept-btn");
-          if (acceptBtn) {
-            acceptBtn.onclick = async () => {
-              await updateDoc(doc(db, "patient_form", docId), {
-                status: "Accepted",
-                acceptedBy: driverData.phone
+      const acceptBtn = card.querySelector(".accept-btn");
+
+      if (acceptBtn) {
+        acceptBtn.onclick = async () => {
+          try {
+            // 1. Update Firestore
+            await updateDoc(doc(db, "patient_form", docId), {
+              status: "Accepted",
+              acceptedBy: driverData.phone
+            });
+
+            // 2. Call ESP32 device
+            fetch("http://192.168.1.2/start")
+              .then(response => response.text())
+              .then(result => console.log("ESP32 Response:", result))
+              .catch(error => {
+                console.error("ESP32 Request Failed:", error);
+                alert("Could not connect to ESP32 device.");
               });
 
-              if (data.locationLink) {
-                window.open(data.locationLink, "_blank");
-              } else {
-                alert("No map link available.");
-              }
+            // 3. Open location in Google Maps
+            if (data.locationLink) {
+              window.open(data.locationLink, "_blank");
+            } else {
+              alert("No map link available.");
+            }
 
-              // Move the card to Accepted section
-              acceptedList.appendChild(card);
-              acceptBtn.remove(); // Remove the Accept button
-            };
-          }
-
-          if (data.status === "Accepted" && data.acceptedBy === driverData.phone) {
+            // 4. Move to Accepted section
             acceptedList.appendChild(card);
-          } else if (data.status !== "Accepted") {
-            pendingList.appendChild(card);
+            acceptBtn.remove();
+          } catch (err) {
+            console.error("Error accepting patient:", err);
           }
-        });
-      } catch (error) {
-        console.error("Error loading patients:", error);
+        };
       }
-    }
 
-    loadPatients();
+      // Append the card to the appropriate section
+      if (data.status === "Accepted" && data.acceptedBy === driverData.phone) {
+        acceptedList.appendChild(card);
+      } else if (data.status !== "Accepted") {
+        pendingList.appendChild(card);
+      }
+    });
+  } catch (error) {
+    console.error("Error loading patients:", error);
+  }
+}
+
+loadPatients();
+
   </script>
 </body>
 </html>
